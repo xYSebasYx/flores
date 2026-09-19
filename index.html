@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flores Amarillas para Yami 💛 Kuromi</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Three.js and plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <!-- 3D WebGL Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay -->
+    <div class="ui-layer">
+        <!-- Top Dedication Banner -->
+        <header class="header-banner" id="headerBanner">
+            <img src="kuromi_char.png" alt="Kuromi" class="mini-kuromi-icon">
+            <h1 class="dedication-text">Feliz dia de las flores amariilas mi niña hermosa Yami te las mereces 💛</h1>
+        </header>
+
+        <!-- Bottom Controls Dock -->
+        <nav class="controls-dock">
+            <button class="dock-btn active" id="btnAutoRotate">🔄 Rotación 360°</button>
+            <button class="dock-btn" id="btnFocusBouquet">🌻 Ver Ramo</button>
+            <button class="dock-btn" id="btnFocusKuromi">🖤 Ver Kuromi</button>
+            <button class="dock-btn" id="btnResetView">🌌 Vista Completa</button>
+            <button class="dock-btn" id="btnPetals">✨ Lluvia de Flores</button>
+            <button class="dock-btn" id="btnOpenCard">💌 Dedicatoria</button>
+        </nav>
+
+        <!-- Interaction Helper Hint -->
+        <div class="hint-badge">
+            <span>🖱️ Arrastra para girar en 360° | Rueda para zoom</span>
+        </div>
+    </div>
+
+    <!-- Romantic Card Modal -->
+    <div class="modal-backdrop" id="letterModal">
+        <div class="card-container">
+            <button class="close-modal-btn" id="btnCloseModal" title="Cerrar">&times;</button>
+            <img src="kuromi_char.png" alt="Kuromi" class="modal-kuromi-img">
+            <h2 class="card-title">Para mi niña hermosa Yami 💛</h2>
+            <p class="card-body">
+                Hoy es un día especial para recordarte lo brillante, hermosa e importante que eres en mi vida. 
+                Que estas flores amarillas iluminen siempre tu camino con tanta alegría, amor y magia como la que tú me das.<br><br>
+                <strong>¡Feliz día de las flores amarillas! Te las mereces todas.</strong>
+            </p>
+            <div class="card-signature">Con todo mi amor 💖</div>
+            <button class="btn-open-gift" id="btnEnterScene">
+                <span>Descubrir Detalle Virtual 🌻</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="main.js"></script>
+</body>
+</html>
