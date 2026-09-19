@@ -260,84 +260,229 @@ function initPlatform() {
     }
 }
 
-// References for billboarding
-let kuromiMesh, kuromiAuraMesh;
+// References for 3D Kuromi animation
+let kuromi3DGroup, kuromiRightArm, kuromiTail, kuromiHead;
 
 /* ==========================================================================
-   5. KUROMI CHARACTER
+   5. KUROMI CHARACTER (3D Procedural Chibi Model)
    ========================================================================== */
 function initKuromi() {
     kuromiGroup = new THREE.Group();
     kuromiGroup.position.set(-2.8, 0, 0);
 
-    // Load Kuromi Character texture
-    textureLoader.load('kuromi_char.png', (texture) => {
-        texture.encoding = THREE.sRGBEncoding;
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
+    kuromi3DGroup = new THREE.Group();
+    // Tilted slightly toward the front-right to face viewer and flowers
+    kuromi3DGroup.rotation.y = 0.25;
 
-        const aspect = 533 / 712;
-        const height = 4.4;
-        const width = height * aspect;
-
-        const kuromiGeo = new THREE.PlaneGeometry(width, height);
-        const kuromiMat = new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            alphaTest: 0.02,
-            side: THREE.DoubleSide
-        });
-
-        kuromiMesh = new THREE.Mesh(kuromiGeo, kuromiMat);
-        kuromiMesh.position.set(0, height / 2 + 0.05, 0);
-        kuromiGroup.add(kuromiMesh);
-
-        // Soft pink aura plane behind Kuromi
-        const auraCanvas = document.createElement('canvas');
-        auraCanvas.width = 128;
-        auraCanvas.height = 128;
-        const aCtx = auraCanvas.getContext('2d');
-        const aGrad = aCtx.createRadialGradient(64, 64, 10, 64, 64, 64);
-        aGrad.addColorStop(0, 'rgba(255, 116, 177, 0.55)');
-        aGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.28)');
-        aGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        aCtx.fillStyle = aGrad;
-        aCtx.fillRect(0, 0, 128, 128);
-
-        const auraTex = new THREE.CanvasTexture(auraCanvas);
-        auraTex.encoding = THREE.sRGBEncoding;
-        const auraGeo = new THREE.PlaneGeometry(width * 1.5, height * 1.4);
-        const auraMat = new THREE.MeshBasicMaterial({
-            map: auraTex,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-        kuromiAuraMesh = new THREE.Mesh(auraGeo, auraMat);
-        kuromiAuraMesh.position.set(0, height / 2, -0.05);
-        kuromiGroup.add(kuromiAuraMesh);
+    // Materials
+    const blackMat = new THREE.MeshStandardMaterial({
+        color: 0x18151f,
+        roughness: 0.35,
+        metalness: 0.1
     });
 
-    // Load stylized Kuromi Logo
-    textureLoader.load('kuromi_logo.png', (logoTex) => {
-        logoTex.encoding = THREE.sRGBEncoding;
-        const logoAspect = 493 / 136;
-        const lWidth = 2.4;
-        const lHeight = lWidth / logoAspect;
-
-        const logoGeo = new THREE.PlaneGeometry(lWidth, lHeight);
-        const logoMat = new THREE.MeshBasicMaterial({
-            map: logoTex,
-            transparent: true,
-            alphaTest: 0.05,
-            side: THREE.DoubleSide
-        });
-        const logoMesh = new THREE.Mesh(logoGeo, logoMat);
-        logoMesh.position.set(0, 0.12, 1.4);
-        logoMesh.rotation.x = -Math.PI / 5;
-        kuromiGroup.add(logoMesh);
+    const whiteMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.3,
+        metalness: 0.05
     });
 
+    const pinkMat = new THREE.MeshStandardMaterial({
+        color: 0xff74b1,
+        roughness: 0.35,
+        metalness: 0.08
+    });
+
+    const darkMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const blushMat = new THREE.MeshBasicMaterial({ color: 0xff9ec7, transparent: true, opacity: 0.65 });
+
+    // 1. LEGS & FEET
+    const legGeo = new THREE.CylinderGeometry(0.24, 0.30, 0.65, 24);
+    const footGeo = new THREE.SphereGeometry(0.32, 24, 24);
+
+    // Left leg & foot
+    const leftLeg = new THREE.Mesh(legGeo, whiteMat);
+    leftLeg.position.set(-0.38, 0.42, 0);
+    kuromi3DGroup.add(leftLeg);
+
+    const leftFoot = new THREE.Mesh(footGeo, whiteMat);
+    leftFoot.scale.set(1.0, 0.6, 1.3);
+    leftFoot.position.set(-0.38, 0.18, 0.12);
+    kuromi3DGroup.add(leftFoot);
+
+    // Right leg & foot
+    const rightLeg = new THREE.Mesh(legGeo, whiteMat);
+    rightLeg.position.set(0.38, 0.42, 0);
+    kuromi3DGroup.add(rightLeg);
+
+    const rightFoot = new THREE.Mesh(footGeo, whiteMat);
+    rightFoot.scale.set(1.0, 0.6, 1.3);
+    rightFoot.position.set(0.38, 0.18, 0.12);
+    kuromi3DGroup.add(rightFoot);
+
+    // 2. TORSO (Chubby white pear body)
+    const torsoGeo = new THREE.SphereGeometry(0.85, 32, 32);
+    const torso = new THREE.Mesh(torsoGeo, whiteMat);
+    torso.scale.set(0.96, 1.15, 0.9);
+    torso.position.set(0, 1.15, 0);
+    torso.castShadow = true;
+    kuromi3DGroup.add(torso);
+
+    // 3. ARMS
+    // Left Arm (bent resting comfortably on hip)
+    const leftArmGroup = new THREE.Group();
+    leftArmGroup.position.set(-0.76, 1.25, 0.05);
+    leftArmGroup.rotation.z = -0.45;
+    leftArmGroup.rotation.y = 0.25;
+
+    const armGeo = new THREE.CylinderGeometry(0.16, 0.18, 0.65, 20);
+    const armMeshL = new THREE.Mesh(armGeo, whiteMat);
+    armMeshL.position.y = -0.28;
+    leftArmGroup.add(armMeshL);
+
+    const handGeo = new THREE.SphereGeometry(0.18, 20, 20);
+    const handMeshL = new THREE.Mesh(handGeo, whiteMat);
+    handMeshL.position.y = -0.62;
+    leftArmGroup.add(handMeshL);
+    kuromi3DGroup.add(leftArmGroup);
+
+    // Right Arm (raised waving playfully!)
+    kuromiRightArm = new THREE.Group();
+    kuromiRightArm.position.set(0.76, 1.28, 0.12);
+    kuromiRightArm.rotation.z = 0.65;
+    kuromiRightArm.rotation.x = 0.45;
+
+    const armMeshR = new THREE.Mesh(armGeo, whiteMat);
+    armMeshR.position.y = 0.28;
+    kuromiRightArm.add(armMeshR);
+
+    const handMeshR = new THREE.Mesh(handGeo, whiteMat);
+    handMeshR.position.y = 0.62;
+    kuromiRightArm.add(handMeshR);
+    kuromi3DGroup.add(kuromiRightArm);
+
+    // 4. JESTER NECK COLLAR (Black points with pink balls)
+    const collarGroup = new THREE.Group();
+    collarGroup.position.set(0, 1.76, 0);
+    const collarPoints = 6;
+    const conePointGeo = new THREE.ConeGeometry(0.20, 0.48, 4);
+    const pinkBallGeo = new THREE.SphereGeometry(0.11, 16, 16);
+
+    for (let i = 0; i < collarPoints; i++) {
+        const angle = i * (Math.PI * 2 / collarPoints) + Math.PI / 6;
+        const cp = new THREE.Group();
+        cp.position.set(Math.cos(angle) * 0.62, 0, Math.sin(angle) * 0.62);
+        cp.rotation.y = -angle + Math.PI / 2;
+        cp.rotation.z = -Math.PI / 3;
+
+        const coneP = new THREE.Mesh(conePointGeo, blackMat);
+        coneP.position.y = -0.22;
+        cp.add(coneP);
+
+        const ballP = new THREE.Mesh(pinkBallGeo, pinkMat);
+        ballP.position.y = -0.46;
+        cp.add(ballP);
+
+        collarGroup.add(cp);
+    }
+    kuromi3DGroup.add(collarGroup);
+
+    // 5. DEVIL TAIL (Back of body with black arrow spade and pink base ball)
+    kuromiTail = new THREE.Group();
+    kuromiTail.position.set(0, 0.92, -0.72);
+
+    const tailBaseBall = new THREE.Mesh(pinkBallGeo, pinkMat);
+    kuromiTail.add(tailBaseBall);
+
+    const tailCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0.25, 0.15, -0.35),
+        new THREE.Vector3(0.40, 0.48, -0.45),
+        new THREE.Vector3(0.48, 0.75, -0.32)
+    ]);
+    const tailTubeGeo = new THREE.TubeGeometry(tailCurve, 20, 0.05, 8, false);
+    const tailTube = new THREE.Mesh(tailTubeGeo, blackMat);
+    kuromiTail.add(tailTube);
+
+    const spadeGeo = new THREE.ConeGeometry(0.20, 0.42, 4);
+    const spade = new THREE.Mesh(spadeGeo, blackMat);
+    spade.position.set(0.48, 0.88, -0.28);
+    spade.rotation.z = -0.4;
+    spade.rotation.x = -0.3;
+    spade.scale.set(1.0, 1.0, 0.35);
+    kuromiTail.add(spade);
+    kuromi3DGroup.add(kuromiTail);
+
+    // 6. HEAD & JESTER HOOD (With authentic Kuromi face and hood UV mapping)
+    kuromiHead = new THREE.Group();
+    kuromiHead.position.set(0, 2.75, 0);
+
+    const headTex = textureLoader.load('kuromi_head_uv.png');
+    headTex.encoding = THREE.sRGBEncoding;
+
+    const headMat = new THREE.MeshStandardMaterial({
+        map: headTex,
+        roughness: 0.35,
+        metalness: 0.05
+    });
+
+    const headGeo = new THREE.SphereGeometry(1.28, 36, 36);
+    const headMesh = new THREE.Mesh(headGeo, headMat);
+    headMesh.scale.set(1.15, 1.02, 1.10);
+    headMesh.rotation.y = -Math.PI / 2; // Orients front UV toward +Z
+    headMesh.castShadow = true;
+    kuromiHead.add(headMesh);
+
+    // 7. JESTER EARS / HORNS
+    function createJesterEar(isLeft = true) {
+        const earGroup = new THREE.Group();
+        const sign = isLeft ? -1 : 1;
+        
+        earGroup.position.set(sign * 0.72, 0.85, -0.08);
+        earGroup.rotation.z = sign * -0.42;
+        earGroup.rotation.x = -0.18;
+
+        const s1 = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 0.65, 24), blackMat);
+        s1.position.y = 0.32;
+        earGroup.add(s1);
+
+        const s2 = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.38, 0.65, 24), blackMat);
+        s2.position.set(sign * 0.06, 0.88, -0.04);
+        s2.rotation.z = sign * -0.12;
+        earGroup.add(s2);
+
+        const s3 = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.26, 0.60, 24), blackMat);
+        s3.position.set(sign * 0.16, 1.42, -0.10);
+        s3.rotation.z = sign * -0.18;
+        earGroup.add(s3);
+
+        const tipBall = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), blackMat);
+        tipBall.position.set(sign * 0.24, 1.76, -0.14);
+        earGroup.add(tipBall);
+
+        return earGroup;
+    }
+
+    kuromiHead.add(createJesterEar(true));
+    kuromiHead.add(createJesterEar(false));
+
+    kuromi3DGroup.add(kuromiHead);
+
+    // Soft pink floor aura disc
+    const floorAura = new THREE.Mesh(
+        new THREE.CircleGeometry(1.6, 32),
+        new THREE.MeshBasicMaterial({
+            color: 0xff74b1,
+            transparent: true,
+            opacity: 0.25,
+            blending: THREE.AdditiveBlending
+        })
+    );
+    floorAura.rotation.x = -Math.PI / 2;
+    floorAura.position.y = 0.02;
+    kuromiGroup.add(floorAura);
+
+    kuromiGroup.add(kuromi3DGroup);
     scene.add(kuromiGroup);
 }
 
@@ -635,7 +780,7 @@ function initEventListeners() {
     // Focus Kuromi Button (Centered neatly showing full Kuromi with ears)
     const btnFocusKuromi = document.getElementById('btnFocusKuromi');
     btnFocusKuromi.addEventListener('click', () => {
-        smoothCameraMove({ x: -2.8, y: 2.4, z: 5.4 }, { x: -2.8, y: 2.2, z: 0 });
+        smoothCameraMove({ x: -2.8, y: 2.3, z: 6.2 }, { x: -2.8, y: 2.2, z: 0 });
     });
 
     // Reset View Button
@@ -727,17 +872,21 @@ function animate() {
 
     const time = clock.getElapsedTime();
 
-    // 1. Kuromi idle breathing & floating + Always face camera (Billboard)
-    if (kuromiGroup) {
-        kuromiGroup.position.y = Math.sin(time * 2.2) * 0.08;
+    // 1. Kuromi 3D animations (gentle bounce, head tilt, arm wave, tail wag)
+    if (kuromi3DGroup) {
+        kuromi3DGroup.position.y = Math.sin(time * 2.2) * 0.05;
     }
-    if (kuromiMesh) {
-        // Billboard around Y axis to face the camera continuously in 360 degrees
-        const angle = Math.atan2(camera.position.x - (-2.8), camera.position.z - 0);
-        kuromiMesh.rotation.y = angle;
-        if (kuromiAuraMesh) {
-            kuromiAuraMesh.rotation.y = angle;
-        }
+    if (kuromiHead) {
+        kuromiHead.rotation.y = Math.sin(time * 1.6) * 0.04;
+        kuromiHead.rotation.z = Math.sin(time * 1.2) * 0.02;
+    }
+    if (kuromiRightArm) {
+        // Playful waving hello!
+        kuromiRightArm.rotation.z = 0.65 + Math.sin(time * 4.2) * 0.16;
+    }
+    if (kuromiTail) {
+        // Wagging devil tail!
+        kuromiTail.rotation.y = Math.sin(time * 3.5) * 0.22;
     }
 
     // 2. Bouquet subtle breathing
