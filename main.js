@@ -275,10 +275,9 @@ function initKuromi() {
     kuromi3DGroup.rotation.y = 0.25;
 
     // Materials
-    const blackMat = new THREE.MeshStandardMaterial({
-        color: 0x18151f,
-        roughness: 0.35,
-        metalness: 0.1
+    // Deep pure jet-black without shiny light reflections
+    const blackMat = new THREE.MeshBasicMaterial({
+        color: 0x08060b
     });
 
     const whiteMat = new THREE.MeshStandardMaterial({
@@ -293,7 +292,7 @@ function initKuromi() {
         metalness: 0.08
     });
 
-    const darkMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const darkMat = new THREE.MeshBasicMaterial({ color: 0x08060c });
     const blushMat = new THREE.MeshBasicMaterial({ color: 0xff9ec7, transparent: true, opacity: 0.65 });
 
     // 1. LEGS & FEET
@@ -328,29 +327,30 @@ function initKuromi() {
     torso.castShadow = true;
     kuromi3DGroup.add(torso);
 
-    // 3. ARMS
-    // Left Arm (bent resting comfortably on hip)
-    const leftArmGroup = new THREE.Group();
-    leftArmGroup.position.set(-0.76, 1.25, 0.05);
-    leftArmGroup.rotation.z = -0.45;
-    leftArmGroup.rotation.y = 0.25;
+    // 3. ARMS (Both arms clearly visible, cute and expressive)
+    const armGeo = new THREE.CylinderGeometry(0.16, 0.19, 0.65, 20);
+    const handGeo = new THREE.SphereGeometry(0.20, 20, 20);
 
-    const armGeo = new THREE.CylinderGeometry(0.16, 0.18, 0.65, 20);
+    // Left Arm (Viewer's left: resting comfortably on her hip/side)
+    const leftArmGroup = new THREE.Group();
+    leftArmGroup.position.set(-0.78, 1.25, 0.12);
+    leftArmGroup.rotation.z = -0.45;
+    leftArmGroup.rotation.x = 0.25;
+
     const armMeshL = new THREE.Mesh(armGeo, whiteMat);
     armMeshL.position.y = -0.28;
     leftArmGroup.add(armMeshL);
 
-    const handGeo = new THREE.SphereGeometry(0.18, 20, 20);
     const handMeshL = new THREE.Mesh(handGeo, whiteMat);
     handMeshL.position.y = -0.62;
     leftArmGroup.add(handMeshL);
     kuromi3DGroup.add(leftArmGroup);
 
-    // Right Arm (raised waving playfully!)
+    // Right Arm (Viewer's right: raised waving hello cheerfully to the camera!)
     kuromiRightArm = new THREE.Group();
-    kuromiRightArm.position.set(0.76, 1.28, 0.12);
-    kuromiRightArm.rotation.z = 0.65;
-    kuromiRightArm.rotation.x = 0.45;
+    kuromiRightArm.position.set(0.80, 1.25, 0.15);
+    kuromiRightArm.rotation.z = -0.75;
+    kuromiRightArm.rotation.x = 0.35;
 
     const armMeshR = new THREE.Mesh(armGeo, whiteMat);
     armMeshR.position.y = 0.28;
@@ -780,7 +780,7 @@ function initEventListeners() {
     // Focus Kuromi Button (Centered neatly showing full Kuromi with ears)
     const btnFocusKuromi = document.getElementById('btnFocusKuromi');
     btnFocusKuromi.addEventListener('click', () => {
-        smoothCameraMove({ x: -2.8, y: 2.3, z: 6.2 }, { x: -2.8, y: 2.2, z: 0 });
+        smoothCameraMove({ x: -2.8, y: 2.3, z: 6.8 }, { x: -2.8, y: 2.1, z: 0 });
     });
 
     // Reset View Button
@@ -872,17 +872,25 @@ function animate() {
 
     const time = clock.getElapsedTime();
 
-    // 1. Kuromi 3D animations (gentle bounce, head tilt, arm wave, tail wag)
+    // 1. Kuromi 3D tracking & animations (always looks toward camera in 360°)
     if (kuromi3DGroup) {
         kuromi3DGroup.position.y = Math.sin(time * 2.2) * 0.05;
+
+        // Smoothly rotate Kuromi to look wherever the camera is!
+        const dx = camera.position.x - (-2.8);
+        const dz = camera.position.z - 0;
+        const targetAngle = Math.atan2(dx, dz);
+        let diff = (targetAngle - kuromi3DGroup.rotation.y) % (Math.PI * 2);
+        if (diff < -Math.PI) diff += Math.PI * 2;
+        if (diff > Math.PI) diff -= Math.PI * 2;
+        kuromi3DGroup.rotation.y += diff * 0.08;
     }
     if (kuromiHead) {
-        kuromiHead.rotation.y = Math.sin(time * 1.6) * 0.04;
-        kuromiHead.rotation.z = Math.sin(time * 1.2) * 0.02;
+        kuromiHead.rotation.z = Math.sin(time * 1.5) * 0.03;
     }
     if (kuromiRightArm) {
-        // Playful waving hello!
-        kuromiRightArm.rotation.z = 0.65 + Math.sin(time * 4.2) * 0.16;
+        // Playful waving hello towards camera!
+        kuromiRightArm.rotation.z = -0.75 + Math.sin(time * 4.2) * 0.16;
     }
     if (kuromiTail) {
         // Wagging devil tail!
